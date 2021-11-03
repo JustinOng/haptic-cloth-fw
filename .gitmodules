@@ -1,0 +1,3 @@
+[submodule "free-pdk-examples"]
+	path = free-pdk-examples
+	url = git@github.com:free-pdk/free-pdk-examples.git
