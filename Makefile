@@ -6,7 +6,7 @@ TARGET_VDD = 5.0
 
 # ---------------------------------------------------------------------
 
-OUTPUT_NAME = BlinkLED_$(DEVICE)
+OUTPUT_NAME = VibroCloth_$(DEVICE)
 
 ARCH = pdk14
 

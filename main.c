@@ -1,34 +1,34 @@
-/*
-  BlinkLED
-
-  Turns an LED on for one second, then off for one second, repeatedly.
-  Uses a timing loop for delays.
-*/
-
 #include <pdk/device.h>
 
 #include "auto_sysclock.h"
 #include "delay.h"
+#include "helpers.h"
 
-// LED is placed on the PA4 pin (Port A, Bit 4) with a current sink configuration
-#define LED_BIT 4
+// Motor connected to PA3 (TM2PWM)
 
-// LED is active low (current sink), so define helpers for better readability below
-#define turnLedOn() PA &= ~(1 << LED_BIT)
-#define turnLedOff() PA |= (1 << LED_BIT)
+#define LDR_BIT 4
 
-// Main program
 void main() {
-  // Initialize hardware
-  PAC |= (1 << LED_BIT);  // Set LED as output (all pins are input by default)
-  turnLedOff();
+  // Configure LDR as analog input, disable digital input
+  cbi(PADIER, LDR_BIT);
 
-  // Main processing loop
+  ADCM = ADCM_CLK_SYSCLK_DIV2;  // SYSCLK=1MHz, ADC Clock = 500kHz
+  ADCC = (ADCC_ADC_ENABLE | ADCC_CH_AD9_PA4);
+
+  // Initialise Timer 2
+  TM2C = (TM2C_CLK_IHRC | TM2C_OUT_PA3 | TM2C_MODE_PWM);
+  TM2CT = 0;                                                          // clear counter
+  TM2S = (TM2S_PWM_RES_8BIT | TM2S_PRESCALE_NONE | TM2S_SCALE_DIV3);  // clock = 16M / 3
+  // Overall PWM frequency of 20kHz
+
   while (1) {
-    turnLedOn();
-    _delay_ms(1000);
-    turnLedOff();
-    _delay_ms(1000);
+    sbi(ADCC, ADCC_PROCESS_CONTROL_BIT);
+    while (!(ADCC & ADCC_IS_ADC_CONV_READY))
+      ;
+
+    uint8_t val = 255 - ADCR;
+    TM2B = val;
+    _delay_ms(10);
   }
 }
 
@@ -43,6 +43,8 @@ unsigned char _sdcc_external_startup(void) {
   // The AUTO_CALIBRATE_SYSCLOCK(...) macro uses F_CPU (defined in the Makefile) to choose the IHRC or ILRC oscillator.
   // Alternatively, replace this with the more specific EASY_PDK_CALIBRATE_IHRC(...) or EASY_PDK_CALIBRATE_ILRC(...) macro from easy-pdk/calibrate.h
   AUTO_CALIBRATE_SYSCLOCK(TARGET_VDD_MV);
+
+  // ROP |= ROP_TMX_16MHZ | ROP_TMX_6BIT;
 
   return 0;  // Return 0 to inform SDCC to continue with normal initialization.
 }
