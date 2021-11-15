@@ -4,7 +4,7 @@
 #include "delay.h"
 #include "helpers.h"
 
-// Motor connected to PA3 (TM2PWM)
+// Motor connected to PB7 (TM3PWM)
 
 #define LDR_BIT 4
 
@@ -15,10 +15,10 @@ void main() {
   ADCM = ADCM_CLK_SYSCLK_DIV2;  // SYSCLK=1MHz, ADC Clock = 500kHz
   ADCC = (ADCC_ADC_ENABLE | ADCC_CH_AD9_PA4);
 
-  // Initialise Timer 2
-  TM2C = (TM2C_CLK_IHRC | TM2C_OUT_PA3 | TM2C_MODE_PWM);
-  TM2CT = 0;                                                          // clear counter
-  TM2S = (TM2S_PWM_RES_8BIT | TM2S_PRESCALE_NONE | TM2S_SCALE_DIV3);  // clock = 16M / 3
+  // Initialise Timer 3
+  TM3C = (TM3C_CLK_IHRC | TM3C_OUT_PB7 | TM3C_MODE_PWM);
+  TM3CT = 0;                                                          // clear counter
+  TM3S = (TM3S_PWM_RES_8BIT | TM3S_PRESCALE_NONE | TM3S_SCALE_DIV3);  // clock = 16M / 3
   // Overall PWM frequency of 20kHz
 
   while (1) {
@@ -27,7 +27,7 @@ void main() {
       ;
 
     uint8_t val = 255 - ADCR;
-    TM2B = val;
+    TM3B = val;
     _delay_ms(10);
   }
 }
