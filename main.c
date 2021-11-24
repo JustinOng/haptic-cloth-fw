@@ -3,11 +3,14 @@
 #include "auto_sysclock.h"
 #include "delay.h"
 #include "helpers.h"
+#include "map.h"
 
 // Motor connected to PB7 (TM3PWM)
 #define LDR_BIT 4
 // Pin receiving 8N1 1200baud UART RX
 #define UART_RX_BIT 1
+
+#define UART_MAX_CMD_LEN 6
 
 // 1 if a byte has been received on UART
 // set in ISR, cleared by main after processing
@@ -74,9 +77,23 @@ void interrupt(void) __interrupt(0) {
   cbi(INTRQ, INTRQ_TM2_BIT);
 }
 
+struct {
+  uint8_t min_ldr;
+  uint8_t max_ldr;
+  uint8_t min_motor;
+  uint8_t max_motor;
+} params;
+
 void main() {
+  uint8_t rx_buf[UART_MAX_CMD_LEN];
+  uint8_t len_rx_buf = 0;
   //tmp: PA0 as output for LED
   sbi(PAC, 0);
+
+  params.min_ldr = 0;
+  params.max_ldr = 255;
+  params.min_motor = 0;
+  params.max_motor = 255;
 
   // Configure LDR as analog input, disable digital input
   cbi(PADIER, LDR_BIT);
@@ -114,11 +131,35 @@ void main() {
     while (!(ADCC & ADCC_IS_ADC_CONV_READY))
       ;
 
-    uint8_t val = 255 - ADCR;
-    TM3B = val;
+    uint8_t val = ADCR;
+    TM3B = map(val, params.min_ldr, params.max_ldr, params.min_motor, params.max_motor);
+
     if (flag_uart_rx) {
-      if (uart_rx_data == 'a') {
-        PA ^= (1 << 0);
+      if (uart_rx_data == '\n' && len_rx_buf != 2) {
+        // # explicitly ignore \n in position 3 because
+        // the binary values set could be 0x0a
+        if (len_rx_buf == 3 && rx_buf[0] == 'C') {
+          switch (rx_buf[1]) {
+            case 'l':
+              params.min_ldr = rx_buf[2];
+              break;
+            case 'L':
+              params.max_ldr = rx_buf[2];
+              break;
+            case 'm':
+              params.min_motor = rx_buf[2];
+              break;
+            case 'M':
+              params.max_motor = rx_buf[2];
+              break;
+            default:
+              break;
+          }
+        }
+
+        len_rx_buf = 0;
+      } else {
+        rx_buf[len_rx_buf++] = uart_rx_data;
       }
 
       flag_uart_rx = 0;
