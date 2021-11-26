@@ -31,13 +31,14 @@ void interrupt(void) __interrupt(0) {
   // First data bit is read at count=8 + 4 (offset 4 so at center of bit period),
   //   then at 8 bit multiples subsequently
   static uint8_t rx_read_count = 0;
+  static uint8_t rx_data = 0;
 
   switch (state) {
     case STATE_WAIT_START_BIT:
       if ((PB & (1 << UART_RX_BIT)) == 0) {
         // Start bit received
         state = STATE_READ_DATA;
-        uart_rx_data = 0;
+        rx_data = 0;
         rx_read_count = 0;
       }
       break;
@@ -55,13 +56,14 @@ void interrupt(void) __interrupt(0) {
           rx_read_count == 4 + (8 * 8)) {
         // read in data bit, LSB first
         if (PB & (1 << UART_RX_BIT)) {
-          uart_rx_data = 0x80 | (uart_rx_data >> 1);
+          rx_data = 0x80 | (rx_data >> 1);
         } else {
-          uart_rx_data = uart_rx_data >> 1;
+          rx_data = rx_data >> 1;
         }
       } else if (rx_read_count == 4 + (9 * 9)) {
         // stop bit, has to be HIGH
         if (PB & (1 << UART_RX_BIT)) {
+          uart_rx_data = rx_data;
           flag_uart_rx = 1;
         }
 
