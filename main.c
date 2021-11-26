@@ -89,8 +89,6 @@ struct {
 void main() {
   uint8_t rx_buf[UART_MAX_CMD_LEN];
   uint8_t len_rx_buf = 0;
-  //tmp: PA0 as output for LED
-  sbi(PAC, 0);
 
   params.min_ldr = 0;
   params.max_ldr = 255;
