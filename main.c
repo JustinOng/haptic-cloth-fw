@@ -134,6 +134,7 @@ void main() {
     uint8_t val = ADCR;
     TM3B = map(val, params.min_ldr, params.max_ldr, params.min_motor, params.max_motor);
 
+    __disgint();
     if (flag_uart_rx) {
       if (uart_rx_data == '\n' && len_rx_buf != 2) {
         // # explicitly ignore \n in position 3 because
@@ -167,6 +168,8 @@ void main() {
 
       flag_uart_rx = 0;
     }
+
+    __engint();
   }
 }
 
