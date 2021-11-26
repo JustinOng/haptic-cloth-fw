@@ -159,6 +159,9 @@ void main() {
 
         len_rx_buf = 0;
       } else {
+        if (len_rx_buf >= UART_MAX_CMD_LEN) {
+          len_rx_buf = 0;
+        }
         rx_buf[len_rx_buf++] = uart_rx_data;
       }
 
