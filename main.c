@@ -60,7 +60,7 @@ void interrupt(void) __interrupt(0) {
         } else {
           rx_data = rx_data >> 1;
         }
-      } else if (rx_read_count == 4 + (9 * 9)) {
+      } else if (rx_read_count == 4 + (9 * 8)) {
         // stop bit, has to be HIGH
         if (PB & (1 << UART_RX_BIT)) {
           uart_rx_data = rx_data;
