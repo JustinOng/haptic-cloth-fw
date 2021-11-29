@@ -119,7 +119,7 @@ void main() {
   sbi(INTEN, INTEN_TM2_ENABLE_BIT);
 
   // Initialise Timer 3 for output of motor PWM
-  TM3C = (TM3C_CLK_IHRC | TM3C_OUT_PB7 | TM3C_MODE_PWM);
+  TM3C = (TM3C_CLK_IHRC | TM3C_OUT_PB7 | TM3C_MODE_PWM | TM3C_INVERT_OUT);
   TM3CT = 0;                                                          // clear counter
   TM3S = (TM3S_PWM_RES_8BIT | TM3S_PRESCALE_NONE | TM3S_SCALE_DIV3);  // clock = 16M / 3
   // Overall PWM frequency of 20kHz
@@ -185,7 +185,7 @@ unsigned char _sdcc_external_startup(void) {
   // Alternatively, replace this with the more specific EASY_PDK_CALIBRATE_IHRC(...) or EASY_PDK_CALIBRATE_ILRC(...) macro from easy-pdk/calibrate.h
   AUTO_CALIBRATE_SYSCLOCK(TARGET_VDD_MV);
 
-  // ROP |= ROP_TMX_16MHZ | ROP_TMX_6BIT;
+  PDK_SET_FUSE(FUSE_SECURITY_ON | FUSE_PB4_PB7_STRONG | FUSE_BOOTUP_SLOW);
 
   return 0;  // Return 0 to inform SDCC to continue with normal initialization.
 }

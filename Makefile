@@ -48,7 +48,7 @@ size: build
 	@stat -L --printf "Size of $(OUTPUT_NAME).bin: %s bytes\n" $(OUTPUT).bin
 
 flash: size
-	$(EASYPDKPROG) -n $(DEVICE) write $(OUTPUT).ihx
+	$(EASYPDKPROG) -n $(DEVICE) write $(OUTPUT).ihx --allowsecfuse
 
 run:
 	$(EASYPDKPROG) -r $(TARGET_VDD) start
