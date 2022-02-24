@@ -1,3 +1,5 @@
+Firmware for light-reactive vibration modules built for [Wave 2.0](https://jus.tin.sg/wave-2-0/)
+
 # UART Config
 
 8N1 1200baud to PB1
